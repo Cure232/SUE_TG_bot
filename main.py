@@ -2,14 +2,12 @@ import asyncio
 
 from aiogram import Bot, Dispatcher
 
-from config.config import load_config, Config
+from config.config import config
 from config.menu import set_main_menu
 from handlers.user_handlers import router
 
+
 async def main() -> None:
-
-    config: Config = load_config()
-
     bot = Bot(token=config.tg_bot.token)
 
     dp = Dispatcher()
