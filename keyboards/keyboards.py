@@ -32,6 +32,6 @@ main_game_keyboard: ReplyKeyboardBuilder = main_game_keyboard_builder.as_markup(
 main_team_or_solo_keyboard_builder = ReplyKeyboardBuilder()
 main_team_or_solo_keyboard_builder.row(button_solo_choose, button_team_choose, button_back, width=2)
 
-main_team_or_solo_keyboard: ReplyKeyboardBuilder = main_team_or_solo_keyboard_builder(
+main_team_or_solo_keyboard: ReplyKeyboardBuilder = main_team_or_solo_keyboard_builder.as_markup(
     resize_keyboard = True
 )
