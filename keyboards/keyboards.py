@@ -4,20 +4,34 @@ from aiogram.utils.keyboard import ReplyKeyboardBuilder
 from lexicon.lexicon import LEXICON
 
 button_register = KeyboardButton(text=LEXICON["register_button"])
-button_cs_choose = KeyboardButton(text=LEXICON["cs_choose_button"])
-button_dota_choose = KeyboardButton(text=LEXICON["dota_choose_button"])
+
+button_cs_choose = KeyboardButton(text=LEXICON["cs_game_button"])
+button_dota_choose = KeyboardButton(text=LEXICON["dota_game_button"])
 button_back = KeyboardButton(text=LEXICON["back_button"])
 
-user_keyboard_builder = ReplyKeyboardBuilder()
-user_keyboard_builder.row(button_register)
+button_solo_choose = KeyboardButton(text=LEXICON["solo_button"])
+button_team_choose = KeyboardButton(text=LEXICON["team_button"])
 
-user_keyboard: ReplyKeyboardBuilder = user_keyboard_builder.as_markup(
+
+main_keyboard_builder = ReplyKeyboardBuilder()
+main_keyboard_builder.row(button_register)
+
+main_keyboard: ReplyKeyboardBuilder = main_keyboard_builder.as_markup(
     resize_keyboard = True
 )
 
-user_keyboard_choose_builder = ReplyKeyboardBuilder()
-user_keyboard_choose_builder.row(button_cs_choose, button_dota_choose, button_back, width=2)
 
-user_choose_keyboard: ReplyKeyboardBuilder = user_keyboard_choose_builder.as_markup(
+main_game_keyboard_builder = ReplyKeyboardBuilder()
+main_game_keyboard_builder.row(button_cs_choose, button_dota_choose, button_back, width=2)
+
+main_game_keyboard: ReplyKeyboardBuilder = main_game_keyboard_builder.as_markup(
+    resize_keyboard = True
+)
+
+
+main_team_or_solo_keyboard_builder = ReplyKeyboardBuilder()
+main_team_or_solo_keyboard_builder.row(button_solo_choose, button_team_choose, button_back, width=2)
+
+main_team_or_solo_keyboard: ReplyKeyboardBuilder = main_team_or_solo_keyboard_builder.as_markup(
     resize_keyboard = True
 )
