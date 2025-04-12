@@ -3,7 +3,9 @@ LEXICON = {
     "/register"             : "Выберите дисциплину, в которой хотите зарегистрироваться",
     "/help"                 : "Help realization",
     "register_button"       : "Зарегистрироваться",
-    "dota_choose_button"    : "Dota 2",
-    "cs_choose_button"      : "Counter - Strike 2",
-    "back_button"           : "Вернуться назад"
+    "dota_game_button"      : "Dota 2",
+    "cs_game_button"        : "Counter - Strike 2",
+    "back_button"           : "Вернуться назад",
+    "solo_button"           : "Регистрация себя",
+    "team_button"           : "Регистрация команды"
 }
