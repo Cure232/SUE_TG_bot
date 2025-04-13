@@ -9,7 +9,8 @@ from handlers.fsm_registration import RegistrationFSM
 from keyboards.keyboards import (
     main_keyboard,
     main_game_keyboard,
-    main_team_or_solo_keyboard 
+    main_team_or_solo_keyboard,
+    teammates_keyboard
     )
 from lexicon.lexicon import LEXICON
 
@@ -104,17 +105,47 @@ async def process_team_registration(message: Message, state: FSMContext):
 
 @router.message(F.text == LEXICON["solo_button"], StateFilter(RegistrationFSM.team_or_solo))
 async def process_solo_registration(message: Message, state: FSMContext):
-    await message.answer("Регистрация завершена!")
     await state.clear()
+    await message.answer(
+        "\nРегистрация завершена!"
+    )
 
 @router.message(StateFilter(RegistrationFSM.fill_team_name))
 async def process_team_name_registration(message: Message, state: FSMContext):
-    print("dkwodkwd")
     await state.update_data(fill_team_name=message.text)
     await state.set_state(RegistrationFSM.add_teammate)
     await state.update_data(add_teammate=[])
     await message.answer(
-        "\nТеперь поочередно введите данные других игроков."
+        "\nТеперь можете добавить сокомандников",
+        reply_markup=teammates_keyboard
+        )
+
+@router.message(F.text == LEXICON["add_teammate_button"], StateFilter(RegistrationFSM.add_teammate))
+async def process_teammate_addition(message: Message, state: FSMContext):
+    await state.set_state(RegistrationFSM.fill_teammate_data)
+    await message.answer(
+        """\nВведите данные сокомандника в формате:\n
+            ФИО\n
+            группа\n
+            сслыка на Стим\n
+            никнейм в Тг\n
+            Фото студенческого билета приложите в этом же сообщении вложением
+        """
+        )
+
+@router.message(StateFilter(RegistrationFSM.fill_teammate_data))
+async def process_team_registration(message: Message, state: FSMContext):
+    await state.set_state(RegistrationFSM.add_teammate)
+    await message.answer(
+        "\nДанные записаны",
+        reply_markup=teammates_keyboard
+        )
+
+@router.message(F.text == LEXICON["team_done_button"], StateFilter(RegistrationFSM.add_teammate))
+async def process_team_registration(message: Message, state: FSMContext):
+    await state.clear()
+    await message.answer(
+        "\nКоманда добавлена!"
         )
 
 @router.message(F.text == LEXICON["back_button"])

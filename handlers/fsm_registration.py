@@ -9,4 +9,4 @@ class RegistrationFSM(StatesGroup):
     team_or_solo = State()
     fill_team_name = State()
     add_teammate = State()
-
+    fill_teammate_data = State()

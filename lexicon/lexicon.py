@@ -7,5 +7,7 @@ LEXICON = {
     "cs_game_button"        : "Counter - Strike 2",
     "back_button"           : "Вернуться назад",
     "solo_button"           : "Регистрация себя",
-    "team_button"           : "Регистрация команды"
+    "team_button"           : "Регистрация команды",
+    "add_teammate_button"   : "Добавить игрока",
+    "team_done_button"      : "Команда собрана"
 }
