@@ -39,7 +39,7 @@ main_team_or_solo_keyboard: ReplyKeyboardMarkup = main_team_or_solo_keyboard_bui
 )
 
 teammates_keyboard_builder = ReplyKeyboardBuilder()
-teammates_keyboard_builder.row(button_add_teammate, button_team_done, button_back)
+teammates_keyboard_builder.row(button_add_teammate, button_team_done, button_back, width=2)
 
 teammates_keyboard: ReplyKeyboardMarkup = teammates_keyboard_builder.as_markup(
     resize_keyboard = True
