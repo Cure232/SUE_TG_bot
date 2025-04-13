@@ -19,7 +19,7 @@ class User(Base):
     is_captain: Mapped[bool] = mapped_column(Boolean, nullable=False)
     game: Mapped[str] = mapped_column(String, nullable=False)
 
-    team_id: Mapped[int] = mapped_column(Integer, ForeignKey("team.id"))
+    team_id: Mapped[int] = mapped_column(Integer, ForeignKey("team.id"), nullable=True)
     team: Mapped["Team"] = relationship("Team", back_populates="users")
 
 

@@ -1,4 +1,6 @@
-from aiogram import F, Router
+import os
+
+from aiogram import F, Bot, Router
 from aiogram.types import Message
 from aiogram.filters import Command
 from aiogram.filters import StateFilter
@@ -17,8 +19,12 @@ from keyboards.keyboards import (
 from lexicon.lexicon import LEXICON
 from lexicon.commands import COMMANDS
 from database.config import get_async_session
+from database.schemas import UserCreate
+from database.models import User
 
 router = Router()
+
+IMG_DIR = "images"
 
 @router.message(Command(commands='start'))
 async def process_start_command(message: Message):
@@ -60,6 +66,8 @@ async def process_stop_registration(message: Message, state: FSMContext):
 @router.message(F.text == LEXICON["register_button"], StateFilter(default_state))
 @router.message(Command(commands="register"))
 async def process_register_command(message: Message, state: FSMContext):
+    await state.update_data(tg_link=message.from_user.username)
+    await state.update_data(is_captain=True)
     await state.set_state(RegistrationFSM.fill_name)
     await message.answer(
         "Начата регистрация на турнир. \n" 
@@ -69,7 +77,7 @@ async def process_register_command(message: Message, state: FSMContext):
 
 @router.message(StateFilter(RegistrationFSM.fill_name), F.text.isalpha())
 async def process_name_registration(message: Message, state: FSMContext):
-    await state.update_data(fill_name=message.text)
+    await state.update_data(name=message.text)
     await state.set_state(RegistrationFSM.fill_group)
     await message.answer(
         "Данные сохранены. \n" 
@@ -79,7 +87,7 @@ async def process_name_registration(message: Message, state: FSMContext):
 
 @router.message(StateFilter(RegistrationFSM.fill_group))
 async def process_group_registration(message: Message, state: FSMContext):
-    await state.update_data(fill_group=message.text)
+    await state.update_data(group_num=message.text)
     await state.set_state(RegistrationFSM.fill_steam_lnk)
     await message.answer(
         "Данные сохранены. \n" 
@@ -89,7 +97,7 @@ async def process_group_registration(message: Message, state: FSMContext):
 
 @router.message(StateFilter(RegistrationFSM.fill_steam_lnk))
 async def process_link_registration(message: Message, state: FSMContext):
-    await state.update_data(fill_link=message.text)
+    await state.update_data(steam_link=message.text)
     await state.set_state(RegistrationFSM.fill_photo)
     await message.answer(
         "Данные сохранены. \n" 
@@ -98,10 +106,17 @@ async def process_link_registration(message: Message, state: FSMContext):
         )
 
 @router.message(StateFilter(RegistrationFSM.fill_photo), F.photo)
-async def process_photo_registration(message: Message, state: FSMContext):
-    first_photo = message.photo[0]
+async def process_photo_registration(message: Message, state: FSMContext, bot: Bot):
+    photo = message.photo[-1]
 
-    await state.update_data(fill_photo=first_photo.file_id)
+    file = await bot.get_file(photo.file_id)
+    file_path = os.path.join(IMG_DIR, f"{photo.file_id}.jpg")
+
+    os.makedirs(IMG_DIR, exist_ok=True)
+
+    await bot.download_file(file.file_path, file_path)
+
+    await state.update_data(st_card_photo=file_path)
     await state.set_state(RegistrationFSM.fill_game)
     await message.answer(
         "Данные сохранены. \n" 
@@ -112,7 +127,7 @@ async def process_photo_registration(message: Message, state: FSMContext):
 @router.message(F.text.in_({LEXICON["dota_game_button"], LEXICON["cs_game_button"]}), 
                 StateFilter(RegistrationFSM.fill_game))
 async def process_game_registration(message: Message, state: FSMContext):
-    await state.update_data(fill_game=message.text)
+    await state.update_data(game=message.text)
     await state.set_state(RegistrationFSM.team_or_solo)
     await message.answer(
         f"Выбрана дисциплина {message.text}\n" 
@@ -122,6 +137,7 @@ async def process_game_registration(message: Message, state: FSMContext):
 
 @router.message(F.text == LEXICON["team_button"], StateFilter(RegistrationFSM.team_or_solo))
 async def process_team_registration(message: Message, state: FSMContext):
+    await state.update_data(team_id=None)
     await state.set_state(RegistrationFSM.fill_team_name)
     await message.answer(
         "\nВведите название вашей команды",
@@ -130,6 +146,14 @@ async def process_team_registration(message: Message, state: FSMContext):
 
 @router.message(F.text == LEXICON["solo_button"], StateFilter(RegistrationFSM.team_or_solo))
 async def process_solo_registration(message: Message, state: FSMContext):
+    await state.update_data(team_id=None)
+
+    async with get_async_session() as session:
+            data: dict = await state.get_data()
+            print(data)
+            user_db = User(**data)
+            session.add(user_db)
+
     await state.clear()
     await message.answer(
         "\nРегистрация завершена!",
@@ -138,9 +162,9 @@ async def process_solo_registration(message: Message, state: FSMContext):
 
 @router.message(StateFilter(RegistrationFSM.fill_team_name))
 async def process_team_name_registration(message: Message, state: FSMContext):
-    await state.update_data(fill_team_name=message.text)
+    await state.update_data(team_name=message.text)
     await state.set_state(RegistrationFSM.add_teammate)
-    await state.update_data(add_teammate=[])
+    await state.update_data(teammates=[])
     await message.answer(
         "\nТеперь можете добавить сокомандников",
         reply_markup=teammates_keyboard
@@ -162,6 +186,7 @@ async def process_teammate_addition(message: Message, state: FSMContext):
 
 @router.message(StateFilter(RegistrationFSM.fill_teammate_data))
 async def process_team_registration(message: Message, state: FSMContext):
+    await state.get_data()["teammates"].append(message.text)
     await state.set_state(RegistrationFSM.add_teammate)
     await message.answer(
         "\nДанные записаны",
