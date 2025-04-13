@@ -1,5 +1,5 @@
 from aiogram import F, Router
-from aiogram.types import Message, ReplyKeyboardRemove
+from aiogram.types import Message
 from aiogram.filters import Command
 from aiogram.filters import StateFilter
 from aiogram.fsm.context import FSMContext
@@ -16,6 +16,7 @@ from keyboards.keyboards import (
     )
 from lexicon.lexicon import LEXICON
 from lexicon.commands import COMMANDS
+from database.config import get_async_session
 
 router = Router()
 
@@ -177,7 +178,5 @@ async def process_team_registration(message: Message, state: FSMContext):
 
 
 @router.message(F.text == LEXICON["back_button"])
-async def prcess_back_registration(message: Message):
-    await message.answer(
-        ""
-        )
+async def process_back_registration(message: Message):
+    pass

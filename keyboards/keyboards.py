@@ -55,7 +55,7 @@ teammates_keyboard: ReplyKeyboardMarkup = teammates_keyboard_builder.as_markup(
 button_stop_fsm_builder = ReplyKeyboardBuilder()
 button_stop_fsm_builder.row(button_stop_fsm)
 
-main_cancel_registration_keyboard: ReplyKeyboardBuilder = button_stop_fsm_builder.as_markup(
+main_cancel_registration_keyboard: ReplyKeyboardMarkup = button_stop_fsm_builder.as_markup(
     resize_keyboard = True
 )
 
@@ -63,6 +63,6 @@ main_cancel_registration_keyboard: ReplyKeyboardBuilder = button_stop_fsm_builde
 button_agree_fsm_builder = ReplyKeyboardBuilder()
 button_agree_fsm_builder.row(button_yes_stop, button_no_stop, width=2)
 
-main_cancel_registration_choice_keyboard: ReplyKeyboardBuilder = button_agree_fsm_builder.as_markup(
+main_cancel_registration_choice_keyboard: ReplyKeyboardMarkup = button_agree_fsm_builder.as_markup(
     resize_keyboard = True
 )
