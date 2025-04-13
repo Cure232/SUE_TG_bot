@@ -11,8 +11,8 @@ from keyboards.keyboards import (
     main_game_keyboard,
     main_team_or_solo_keyboard,
     teammates_keyboard,
-    main_stop_fsm_keyboard,
-    fsm_yes_no_keyboard
+    main_cancel_registration_keyboard,
+    main_cancel_registration_choice_keyboard
     )
 from lexicon.lexicon import LEXICON
 from lexicon.commands import COMMANDS
@@ -38,7 +38,7 @@ async def process_help_command(message: Message):
 async def process_cancel_command_state(message: Message, state: FSMContext):
     await message.answer(
         "Вы точно хотите прекратить процесс регистрации?",
-        reply_markup=fsm_yes_no_keyboard
+        reply_markup=main_cancel_registration_choice_keyboard
         )
     
 @router.message(F.text == LEXICON["yes_stop_button"], ~StateFilter(default_state))
@@ -53,9 +53,8 @@ async def process_stop_registration(message: Message, state: FSMContext):
 async def process_stop_registration(message: Message, state: FSMContext):
     await message.answer(
         "\n Продолжайте регистрацию",
-        reply_markup=main_stop_fsm_keyboard
+        reply_markup=main_cancel_registration_keyboard
     )
-    await state.get_state()
 
 @router.message(F.text == LEXICON["register_button"], StateFilter(default_state))
 @router.message(Command(commands="register"))
@@ -64,7 +63,7 @@ async def process_register_command(message: Message, state: FSMContext):
     await message.answer(
         "Начата регистрация на турнир. \n" 
         "\nНапишите ваше ФИО.",
-        reply_markup=main_stop_fsm_keyboard
+        reply_markup=main_cancel_registration_keyboard
         )
 
 @router.message(StateFilter(RegistrationFSM.fill_name), F.text.isalpha())
@@ -74,7 +73,7 @@ async def process_name_registration(message: Message, state: FSMContext):
     await message.answer(
         "Данные сохранены. \n" 
         "\nВведите номер группы.  ",
-        reply_markup=main_stop_fsm_keyboard
+        reply_markup=main_cancel_registration_keyboard
         )
 
 @router.message(StateFilter(RegistrationFSM.fill_group))
@@ -84,7 +83,7 @@ async def process_group_registration(message: Message, state: FSMContext):
     await message.answer(
         "Данные сохранены. \n" 
         "\nВведите ссылку на STEAM. ",
-        reply_markup=main_stop_fsm_keyboard
+        reply_markup=main_cancel_registration_keyboard
         )
 
 @router.message(StateFilter(RegistrationFSM.fill_steam_lnk))
@@ -94,7 +93,7 @@ async def process_link_registration(message: Message, state: FSMContext):
     await message.answer(
         "Данные сохранены. \n" 
         "\nПрикрепите фотографию студенческого для верификации. ",
-        reply_markup=main_stop_fsm_keyboard
+        reply_markup=main_cancel_registration_keyboard
         )
 
 @router.message(StateFilter(RegistrationFSM.fill_photo), F.photo)
