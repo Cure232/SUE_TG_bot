@@ -9,5 +9,7 @@ LEXICON = {
     "solo_button"           : "Регистрация себя",
     "team_button"           : "Регистрация команды",
     "add_teammate_button"   : "Добавить игрока",
-    "team_done_button"      : "Команда собрана"
+    "team_done_button"      : "Команда собрана",
+    "yes_stop_button"       : "Да, я хочу прекратить регистрацию",
+    "no_stop_button"        : "Нет, я хочу продолжить регистрацию"
 }

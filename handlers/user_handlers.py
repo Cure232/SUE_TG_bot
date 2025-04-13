@@ -1,5 +1,5 @@
 from aiogram import F, Router
-from aiogram.types import Message
+from aiogram.types import Message, ReplyKeyboardRemove
 from aiogram.filters import Command
 from aiogram.filters import StateFilter
 from aiogram.fsm.context import FSMContext
@@ -10,9 +10,12 @@ from keyboards.keyboards import (
     main_keyboard,
     main_game_keyboard,
     main_team_or_solo_keyboard,
-    teammates_keyboard
+    teammates_keyboard,
+    main_cancel_registration_keyboard,
+    main_cancel_registration_choice_keyboard
     )
 from lexicon.lexicon import LEXICON
+from lexicon.commands import COMMANDS
 
 router = Router()
 
@@ -30,12 +33,28 @@ async def process_help_command(message: Message):
         reply_markup=main_keyboard
         )
 
+@router.message(F.text == COMMANDS["/cancel"])
 @router.message(Command(commands='cancel'), ~StateFilter(default_state))
 async def process_cancel_command_state(message: Message, state: FSMContext):
     await message.answer(
-        "Вы прекратили процесс регистрации."
+        "Вы точно хотите прекратить процесс регистрации?",
+        reply_markup=main_cancel_registration_choice_keyboard
         )
+    
+@router.message(F.text == LEXICON["yes_stop_button"], ~StateFilter(default_state))
+async def process_stop_registration(message: Message, state: FSMContext):
     await state.clear()
+    await message.answer(
+        "\n Регистрация прекращена",
+        reply_markup=main_keyboard        
+    )
+
+@router.message(F.text == LEXICON["no_stop_button"], ~StateFilter(default_state))
+async def process_stop_registration(message: Message, state: FSMContext):
+    await message.answer(
+        "\n Продолжайте регистрацию",
+        reply_markup=main_cancel_registration_keyboard
+    )
 
 @router.message(F.text == LEXICON["register_button"], StateFilter(default_state))
 @router.message(Command(commands="register"))
@@ -43,7 +62,8 @@ async def process_register_command(message: Message, state: FSMContext):
     await state.set_state(RegistrationFSM.fill_name)
     await message.answer(
         "Начата регистрация на турнир. \n" 
-        "\nНапишите ваше ФИО."
+        "\nНапишите ваше ФИО.",
+        reply_markup=main_cancel_registration_keyboard
         )
 
 @router.message(StateFilter(RegistrationFSM.fill_name), F.text.isalpha())
@@ -52,7 +72,8 @@ async def process_name_registration(message: Message, state: FSMContext):
     await state.set_state(RegistrationFSM.fill_group)
     await message.answer(
         "Данные сохранены. \n" 
-        "\nВведите номер группы.  "
+        "\nВведите номер группы.  ",
+        reply_markup=main_cancel_registration_keyboard
         )
 
 @router.message(StateFilter(RegistrationFSM.fill_group))
@@ -61,7 +82,8 @@ async def process_group_registration(message: Message, state: FSMContext):
     await state.set_state(RegistrationFSM.fill_steam_lnk)
     await message.answer(
         "Данные сохранены. \n" 
-        "\nВведите ссылку на STEAM. "
+        "\nВведите ссылку на STEAM. ",
+        reply_markup=main_cancel_registration_keyboard
         )
 
 @router.message(StateFilter(RegistrationFSM.fill_steam_lnk))
@@ -70,7 +92,8 @@ async def process_link_registration(message: Message, state: FSMContext):
     await state.set_state(RegistrationFSM.fill_photo)
     await message.answer(
         "Данные сохранены. \n" 
-        "\nПрикрепите фотографию студенческого для верификации. "
+        "\nПрикрепите фотографию студенческого для верификации. ",
+        reply_markup=main_cancel_registration_keyboard
         )
 
 @router.message(StateFilter(RegistrationFSM.fill_photo), F.photo)
@@ -83,7 +106,7 @@ async def process_photo_registration(message: Message, state: FSMContext):
         "Данные сохранены. \n" 
         "\nВыберите дисциплину для турнира",
         reply_markup=main_game_keyboard
-    )
+        )
 
 @router.message(F.text.in_({LEXICON["dota_game_button"], LEXICON["cs_game_button"]}), 
                 StateFilter(RegistrationFSM.fill_game))
@@ -100,15 +123,17 @@ async def process_game_registration(message: Message, state: FSMContext):
 async def process_team_registration(message: Message, state: FSMContext):
     await state.set_state(RegistrationFSM.fill_team_name)
     await message.answer(
-        "\nВведите название вашей команды"
+        "\nВведите название вашей команды",
+        reply_markup=teammates_keyboard
         )
 
 @router.message(F.text == LEXICON["solo_button"], StateFilter(RegistrationFSM.team_or_solo))
 async def process_solo_registration(message: Message, state: FSMContext):
     await state.clear()
     await message.answer(
-        "\nРегистрация завершена!"
-    )
+        "\nРегистрация завершена!",
+        reply_markup=main_keyboard
+        )
 
 @router.message(StateFilter(RegistrationFSM.fill_team_name))
 async def process_team_name_registration(message: Message, state: FSMContext):
@@ -130,7 +155,8 @@ async def process_teammate_addition(message: Message, state: FSMContext):
             сслыка на Стим\n
             никнейм в Тг\n
             Фото студенческого билета приложите в этом же сообщении вложением
-        """
+        """,
+        reply_markup=teammates_keyboard
         )
 
 @router.message(StateFilter(RegistrationFSM.fill_teammate_data))
@@ -145,9 +171,13 @@ async def process_team_registration(message: Message, state: FSMContext):
 async def process_team_registration(message: Message, state: FSMContext):
     await state.clear()
     await message.answer(
-        "\nКоманда добавлена!"
+        "\nКоманда добавлена!",
+        reply_markup=main_keyboard
         )
+
 
 @router.message(F.text == LEXICON["back_button"])
 async def prcess_back_registration(message: Message):
-    await message.answer("Тут будет реализация шага назад")
+    await message.answer(
+        ""
+        )
