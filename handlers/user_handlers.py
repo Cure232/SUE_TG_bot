@@ -226,7 +226,7 @@ async def process_teammate_addition(message: Message, state: FSMContext):
 @router.message(StateFilter(RegistrationFSM.fill_teammate_data))
 async def handle_teammate_data(message: Message, state: FSMContext, bot: Bot):
     text = message.caption
-    if not text and not message.photo:
+    if not text or not message.photo:
         await message.answer("Пожалуйста, в одном сообщении отправьте текст с данными и фото студенческого.")
         return
 
