@@ -1,5 +1,6 @@
 import os
 import logging
+import re
 
 from aiogram import F, Bot, Router
 from aiogram.types import Message
@@ -82,13 +83,27 @@ async def process_register_command(message: Message, state: FSMContext):
         reply_markup=main_cancel_registration_keyboard
     )
 
-@router.message(StateFilter(RegistrationFSM.fill_name), F.text.replace(' ', '').isalpha())
+@router.message(StateFilter(RegistrationFSM.fill_name), lambda message: not re.fullmatch(r'[А-Яа-яёЁ ]{,100}' , message.text))
+async def process_name_registration(message: Message):
+    await message.reply(
+        "Данные введены в неверном формате",
+        reply_markup=main_cancel_registration_keyboard
+    )
+
+@router.message(StateFilter(RegistrationFSM.fill_name))
 async def process_name_registration(message: Message, state: FSMContext):
     await state.update_data(name=message.text)
     await state.set_state(RegistrationFSM.fill_group)
     await message.answer(
         "Данные сохранены. \n"
         "\nВведите номер группы.  ",
+        reply_markup=main_cancel_registration_keyboard
+    )
+
+@router.message(StateFilter(RegistrationFSM.fill_group), lambda message: not re.fullmatch(r'[0-9A-Z- ]{,20}' , message.text))
+async def process_group_registration(message: Message):
+    await message.reply(
+        "Данные введены в неверном формате",
         reply_markup=main_cancel_registration_keyboard
     )
 
@@ -102,6 +117,13 @@ async def process_group_registration(message: Message, state: FSMContext):
         reply_markup=main_cancel_registration_keyboard
     )
 
+@router.message(StateFilter(RegistrationFSM.fill_steam_lnk), lambda message: not re.fullmatch(r'https://steamcommunity.com/\S+' , message.text))
+async def process_link_registration(message: Message):
+    await message.reply(
+        "Данные введены в неверном формате",
+        reply_markup=main_cancel_registration_keyboard
+    )
+
 @router.message(StateFilter(RegistrationFSM.fill_steam_lnk))
 async def process_link_registration(message: Message, state: FSMContext):
     await state.update_data(steam_link=message.text)
@@ -111,6 +133,7 @@ async def process_link_registration(message: Message, state: FSMContext):
         "\nПрикрепите фотографию студенческого для верификации. ",
         reply_markup=main_cancel_registration_keyboard
     )
+
 
 @router.message(StateFilter(RegistrationFSM.fill_photo), F.photo)
 async def process_photo_registration(message: Message, state: FSMContext, bot: Bot):
@@ -129,6 +152,13 @@ async def process_photo_registration(message: Message, state: FSMContext, bot: B
         "Данные сохранены. \n"
         "\nВыберите дисциплину для турнира",
         reply_markup=main_game_keyboard
+    )
+
+@router.message(StateFilter(RegistrationFSM.fill_photo))
+async def process_photo_registration(message: Message):
+    await message.reply(
+        "Данные введены в неверном формате",
+        reply_markup=main_cancel_registration_keyboard
     )
 
 @router.message(F.text.in_({LEXICON["dota_game_button"], LEXICON["cs_game_button"]}),
@@ -190,6 +220,8 @@ async def process_teammate_addition(message: Message, state: FSMContext):
         """,
         reply_markup=teammates_keyboard
     )
+
+
 
 @router.message(StateFilter(RegistrationFSM.fill_teammate_data))
 async def handle_teammate_data(message: Message, state: FSMContext, bot: Bot):
