@@ -206,31 +206,6 @@ async def process_team_name_registration(message: Message, state: FSMContext):
     await state.update_data(team_name=message.text)
     await state.set_state(RegistrationFSM.add_teammate)
     await state.update_data(teammates=[])
-    data = await state.get_data()
-    name = data.get("name")
-    group = data.get("group")
-    tg_link = data.get("tg_link")
-    steam_link = data.get("steam_link")
-    st_card_photo = data.get("st_card_photo")
-    game = data.get("game")
-    async with get_async_session() as session:
-        new_team = Team(name=data.get("team_name"))
-        session.add(new_team)
-        await session.commit() 
-        await session.refresh(new_team) 
-        new_user = User(
-            name=name,
-            group_num=group,
-            tg_link=tg_link,
-            steam_link=steam_link,
-            st_card_photo=st_card_photo,
-            is_captain=True,
-            game=game,
-            team_id=new_team.id
-        )
-        session.add(new_user)
-        await session.commit()
-    await state.update_data(team_id=new_team.id)
     await message.answer(
         "Теперь можете добавить сокомандников",
         reply_markup=teammates_keyboard
@@ -243,41 +218,6 @@ async def process_teammate_start_registration(message: Message, state: FSMContex
         "Введите ФИО игрока: ",
         reply_markup=teammates_keyboard
     )
-
-
-
-@router.message(StateFilter(RegistrationFSM.fill_teammate_data))
-async def handle_teammate_data(message: Message, state: FSMContext, bot: Bot):
-    text = message.caption
-    if not handle_teammate_data_check(text) or not message.photo:
-        await message.answer("Пожалуйста, в одном сообщении отправьте текст с данными и фото студенческого.")
-        return
-
-    lines = text.strip().split('\n')
-    photo = message.photo[-1]
-    name = lines[0].strip()
-    group = lines[1].strip()
-    steam_link = lines[2].strip()
-    tg_link = lines[3].strip()
-    file = await bot.get_file(photo.file_id)
-    file_path = os.path.join(IMG_DIR, f"{photo.file_id}.jpg")
-    await bot.download_file(file.file_path, file_path)
-
-    new_user = User(
-        name=name,
-        group_num=group,
-        tg_link=tg_link,
-        steam_link=steam_link,
-        st_card_photo=file_path,
-        is_captain=False,
-        game=state.get_data()["game"],
-        team_id=state.get_data()["team_id"]
-    )
-    async with get_async_session() as session:
-        session.add(new_user)
-        await session.commit()
-    await message.answer("Сокомандник добавлен. Переходим к следующему этапу.")
-    await state.set_state(RegistrationFSM.fill_teammate_data)
 
 @router.message(StateFilter(RegistrationTeamFSM.fill_steam_lnk))
 async def process_teammate_photo_registartion(message: Message, state: FSMContext):
@@ -308,26 +248,3 @@ async def process_team_registration(message: Message, state: FSMContext):
 @router.message(F.text == LEXICON["back_button"])
 async def process_back_registration(message: Message):
     pass
-
-import re
-
-
-def handle_teammate_data_check(message: str) -> bool:
-    lines = message.strip().split('\n')
-    name = lines[0].strip()
-    group = lines[1].strip()
-    steam_link = lines[2].strip()
-    tg_link = lines[3].strip()
-   
-    if not all([name, group, steam_link, tg_link]):
-        return False
-    if not re.fullmatch(r'[А-Яа-яёЁ ]{,100}' ,name):
-        return False
-    if not re.fullmatch(r'[0-9A-Z- ]{,20}' , group):
-        return False 
-    if not re.fullmatch(r'https://steamcommunity.com/\S+', steam_link):
-        return False 
-    if not re.fullmatch(r'[0-9A-Za-z_]+', tg_link):
-        return False 
-    
-    return True
