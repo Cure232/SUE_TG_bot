@@ -1,7 +1,10 @@
+from enum import Enum
+
 from sqlalchemy import (String, 
                         Integer,
                         Boolean,
-                        ForeignKey
+                        ForeignKey,
+                        Enum as SQLEnum
                         )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -29,3 +32,16 @@ class Team(Base):
     name: Mapped[str] = mapped_column(String, nullable=False)
 
     users: Mapped[list["User"]] = relationship("User", back_populates="team")
+
+
+class Role(Enum):
+    admin = "admin"
+    superadmin = "superadmin"
+
+
+class Admin(Base):
+    __tablename__ = "admin"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+
+    user_id:  Mapped[int] = mapped_column(Integer, nullable=False)
+    role: Mapped[Role] = mapped_column(SQLEnum(Role), nullable=False)

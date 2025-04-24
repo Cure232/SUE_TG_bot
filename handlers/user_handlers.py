@@ -3,7 +3,7 @@ import logging
 import re
 
 from aiogram import F, Bot, Router
-from aiogram.types import Message
+from aiogram.types import Message, FSInputFile
 from aiogram.filters import Command
 from aiogram.filters import StateFilter
 from aiogram.fsm.context import FSMContext
@@ -26,6 +26,7 @@ from lexicon.commands import COMMANDS
 from database.config import get_async_session
 from database.schemas import UserCreate
 from database.models import User, Team
+from config.config import config
 
 logging.basicConfig(
     level=logging.INFO,
@@ -186,12 +187,13 @@ async def process_team_registration(message: Message, state: FSMContext):
     )
 
 @router.message(F.text == LEXICON["solo_button"], StateFilter(RegistrationFSM.team_or_solo))
-async def process_solo_registration(message: Message, state: FSMContext):
+async def process_solo_registration(message: Message, state: FSMContext, bot: Bot):
     await state.update_data(team_id=None)
     
+    data: dict = await state.get_data()
+    print(data)
+
     async with get_async_session() as session:
-        data: dict = await state.get_data()
-        print(data)
         user_db = User(**data)
         session.add(user_db)
 
@@ -200,6 +202,11 @@ async def process_solo_registration(message: Message, state: FSMContext):
         "\nРегистрация завершена!",
         reply_markup=main_keyboard
     )
+    msg: str = f'{data["tg_link"]} {data["group_num"]} {data["game"]}'
+    await bot.send_photo(chat_id=config.tg_bot.chat_id, 
+                         message_thread_id=config.tg_bot.chat_thread_id, 
+                         caption=msg, 
+                         photo=FSInputFile(data["st_card_photo"]))
 
 @router.message(StateFilter(RegistrationFSM.fill_team_name))
 async def process_team_name_registration(message: Message, state: FSMContext):
