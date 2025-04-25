@@ -1,6 +1,6 @@
 from aiogram.fsm.state import State, StatesGroup
 
-class RegistrationFSM(StatesGroup):
+class RegistrationSoloFSM(StatesGroup):
     fill_name = State()
     fill_group = State()
     fill_steam_lnk = State()
