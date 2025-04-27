@@ -1,9 +1,8 @@
 import logging
+
 from aiogram import Bot
 
 from config.config import config
-
-LOG_CHAT_ID = -1002538493689
 
 logging.basicConfig(
     level=logging.INFO,
@@ -16,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 async def log_to_chat(bot: Bot, text: str):
     try:
-        await bot.send_message(chat_id=LOG_CHAT_ID, text=text,
+        await bot.send_message(chat_id=config.tg_bot.chat_id, text=text,
                                message_thread_id=config.tg_bot.chat_thread_id)
     except Exception as e:
         logger.error(f"Ошибка отправки лога в чат: {e}")
