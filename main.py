@@ -13,9 +13,9 @@ async def main() -> None:
     bot = Bot(token=config.tg_bot.token)
 
     dp = Dispatcher()
+    dp.include_router(commom_router)
     dp.include_router(solo_router)
     dp.include_router(team_router)
-    dp.include_router(commom_router)
 
     await set_main_menu(bot)
 
