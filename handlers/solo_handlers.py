@@ -8,7 +8,10 @@ from aiogram.filters import StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import default_state
 
-from handlers.fsm_registration import RegistrationSoloFSM
+from handlers.fsm_registration import (
+    RegistrationSoloFSM,
+    RegistrationTeamFSM
+    )
 from keyboards.reply_keyboards import (
     main_keyboard,
     main_game_keyboard,
@@ -158,19 +161,6 @@ async def process_game_registration(message: Message, state: FSMContext):
         reply_markup=main_team_or_solo_keyboard
     )
 
-
-@router.message(F.text == LEXICON["team_button"], StateFilter(RegistrationSoloFSM.team_or_solo))
-async def process_team_registration(message: Message, state: FSMContext):
-    logger.info(
-        f"Пользователь @{message.from_user.username} ({message.from_user.id}) выбрал регистрацию команды.")
-    await state.update_data(team_id=None)
-    await state.set_state(RegistrationSoloFSM.fill_team_name)
-    await message.answer(
-        "\nВведите название вашей команды",
-        reply_markup=teammates_keyboard
-    )
-
-
 @router.message(F.text == LEXICON["solo_button"], StateFilter(RegistrationSoloFSM.team_or_solo))
 async def process_solo_registration(message: Message, state: FSMContext, bot: Bot):
     logger.info(
@@ -198,16 +188,13 @@ async def process_solo_registration(message: Message, state: FSMContext, bot: Bo
     await log_registration_end(bot, message.from_user.username, message.from_user.id, data)
     logger.info(
         f"Логирование завершено для пользователя @{message.from_user.username} ({message.from_user.id})")
-
-
-@router.message(StateFilter(RegistrationSoloFSM.fill_team_name))
-async def process_team_name_registration(message: Message, state: FSMContext):
+    
+@router.message(F.text == LEXICON["team_button"], StateFilter(RegistrationSoloFSM.team_or_solo))
+async def process_team_registration(message: Message, state: FSMContext):
     logger.info(
-        f"Пользователь @{message.from_user.username} ({message.from_user.id}) вводит название команды.")
-    await state.update_data(team_name=message.text)
-    await state.set_state(RegistrationSoloFSM.add_teammate)
-    await state.update_data(teammates=[])
+        f"Пользователь @{message.from_user.username} ({message.from_user.id}) выбрал регистрацию команды.")
+    await state.set_state(RegistrationTeamFSM.fill_team_name)
     await message.answer(
-        "Теперь можете добавить сокомандников",
+        "\nВведите название вашей команды",
         reply_markup=teammates_keyboard
     )
