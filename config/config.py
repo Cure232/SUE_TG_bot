@@ -6,6 +6,8 @@ from dataclasses import dataclass
 @dataclass
 class TgBot:
     token: str
+    chat_id: int
+    chat_thread_id: int
 
 
 @dataclass
@@ -28,7 +30,10 @@ def load_config() -> Config:
     dotenv.load_dotenv()
 
     return Config(
-        tg_bot=TgBot(token=os.getenv("bot_token")),
+        tg_bot=TgBot(token=os.getenv("bot_token"),
+                     chat_id=os.getenv("CHAT_ID"),
+                     chat_thread_id=os.getenv("CHAT_THREAD_ID")
+                     ),
         postgres_db=PostgresDB(
             os.getenv("DB_USER"),
             os.getenv("DB_PASS"),
